@@ -1,0 +1,32 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <LangVersion>14.0</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <RootNamespace>Nem_Mockery</RootNamespace>
+  </PropertyGroup>
+
+  <PropertyGroup Label="NuGet packaging">
+    <PackageId>Nem_Mockery</PackageId>
+    <Version>0.1.0</Version>
+    <Authors>Mark Moosman</Authors>
+    <Description>A mocking library that requires no interfaces or virtual members. Stubs and verifies static, sealed, and non-virtual methods (including properties and constructors) with a Mockito-flavored syntax, using runtime method detouring.</Description>
+    <PackageTags>mocking;testing;mock;stub;detour;static;sealed</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryType>git</RepositoryType>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MonoMod.RuntimeDetour" Version="25.3.4" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,4 @@
+<Solution>
+  <Project Path="Nem_Mockery/Nem_Mockery.csproj" />
+  <Project Path="xUnit_Nem_Mockery/xUnit_Nem_Mockery.csproj" />
+</Solution>
