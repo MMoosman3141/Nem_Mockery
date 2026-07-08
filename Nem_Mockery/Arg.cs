@@ -30,6 +30,24 @@ public static class Arg {
   }
 
   /// <summary>
+  /// Marks the receiver of a stubbed or verified call as "any instance of
+  /// <typeparamref name="T"/>": the arrangement applies to every instance instead of
+  /// one particular object. Only valid in receiver position —
+  /// <c>Arg.AnyInstance&lt;Greeter&gt;().Greet("x")</c> — not as an argument.
+  /// </summary>
+  /// <typeparam name="T">The type whose instances are all matched.</typeparam>
+  /// <returns><see langword="default"/>; the value is never used.</returns>
+  /// <example>
+  /// <code>
+  /// Mock.When(() => Arg.AnyInstance&lt;SealedGreeter&gt;().Greet("x")).ThenReturn("stubbed");
+  /// Mock.Verify(() => Arg.AnyInstance&lt;SealedGreeter&gt;().Greet(Arg.Any&lt;string&gt;()), Times.Exactly(2));
+  /// </code>
+  /// </example>
+  public static T AnyInstance<T>() {
+    return default!;
+  }
+
+  /// <summary>
   /// Matches any value of <typeparamref name="T"/> for which <paramref name="predicate"/>
   /// returns <see langword="true"/>. A <see langword="null"/> argument never matches and
   /// is never passed to the predicate; match null with an exact <see langword="null"/>

@@ -35,7 +35,7 @@ flowchart LR
 |---|---|
 | `Mock` | Public façade: `When`, `WhenSet`, `WhenNew`, `Verify*`. Parses expressions, registers stubs, formats failure messages. |
 | `MockContext` | Disposable scope; owns claims on mocked methods and reverts everything on dispose. Ambient per async flow via `AsyncLocal`. |
-| `CallExpressionParser` | Turns a stubbing/verification lambda into `ParsedCall` — the `MethodBase`, the evaluated receiver, and one `IArgumentMatcher` per parameter — without executing the target call. |
+| `CallExpressionParser` | Turns a stubbing/verification lambda into `ParsedCall` — the `MethodBase`, the evaluated receiver, and one `IArgumentMatcher` per parameter — without executing the target call. Receiver markers (`Arg.AnyInstance<T>()`) and constructors set the `IgnoreInstance` flag, which makes stub matching and verification skip receiver identity. |
 | `MockRegistry` | Process-wide `MethodBase → MethodMock` table. Holds strong references (MonoMod undoes a hook if its object is collected). |
 | `MethodMock` | Per-method state: the MonoMod `Hook`, current stubs, recorded invocations, and the ownership gate. |
 | `HandlerFactory` | Emits the `DynamicMethod` the real method is detoured to. |

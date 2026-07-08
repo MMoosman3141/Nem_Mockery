@@ -57,6 +57,27 @@ When(() => Lookup.Find("known")).ThenReturn("cached");
 Lookup.Find("other");               // executes the real Find
 ```
 
+### Any-instance stubbing
+
+A stub written against an object applies to that object only. To arrange a member
+for **every** instance of a type — including instances the code under test creates
+internally — put `Arg.AnyInstance<T>()` in receiver position:
+
+```csharp
+When(() => Arg.AnyInstance<SealedGreeter>().Greet(Arg.Any<string>()))
+  .ThenReturn("stubbed");                  // every greeter, every argument
+
+When(() => Arg.AnyInstance<SealedGreeter>().Name).ThenReturn("everyone");
+WhenSet(() => Arg.AnyInstance<SealedGreeter>().Name, () => Arg.Any<string>())
+  .ThenDoNothing();
+
+Verify(() => Arg.AnyInstance<SealedGreeter>().Greet(Arg.Any<string>()),
+  Times.Exactly(3));                       // counts calls across all instances
+```
+
+Argument matchers still filter normally, and the newest-stub-wins rule lets an
+exact-instance stub override the any-instance one for that object.
+
 ### Properties, constructors, out parameters
 
 ```csharp
@@ -101,7 +122,8 @@ methods.
   methods — runs real code. This is closer to Mockito's *spy* than its *mock*.
 - **Instance matching.** Stubs written against a class instance match that instance
   by reference. Struct receivers are matched by value equality (every box of a
-  struct is a copy, so identity is meaningless).
+  struct is a copy, so identity is meaningless). `Arg.AnyInstance<T>()` in receiver
+  position matches every instance.
 - **Later stubs win.** When two stubs match the same call, the most recently
   arranged one answers, like Mockito.
 - **All calls are recorded** while a method is mocked — including calls that fell

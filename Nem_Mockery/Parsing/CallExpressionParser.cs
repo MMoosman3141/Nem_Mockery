@@ -21,15 +21,15 @@ internal static class CallExpressionParser {
     Expression body = StripConversions(expression.Body);
     switch (body) {
       case MethodCallExpression call: {
-          object? instance = EvaluateReceiver(call.Object, call.Method);
+          (object? instance, bool ignoreInstance) = ResolveReceiver(call.Object, call.Method);
           IArgumentMatcher[] matchers = BuildMatchers(call.Method, call.Arguments);
-          return new ParsedCall(call.Method, instance, matchers);
+          return new ParsedCall(call.Method, instance, matchers, ignoreInstance);
         }
       case MemberExpression { Member: PropertyInfo property } member: {
           MethodInfo getter = property.GetMethod
             ?? throw new MockeryException($"Property '{property.Name}' has no getter to mock.");
-          object? instance = EvaluateReceiver(member.Expression, getter);
-          return new ParsedCall(getter, instance, []);
+          (object? instance, bool ignoreInstance) = ResolveReceiver(member.Expression, getter);
+          return new ParsedCall(getter, instance, [], ignoreInstance);
         }
       case MemberExpression { Member: FieldInfo field }:
         throw new MockeryException(
@@ -78,18 +78,26 @@ internal static class CallExpressionParser {
     }
     MethodInfo setter = propertyInfo.SetMethod
       ?? throw new MockeryException($"Property '{propertyInfo.Name}' has no setter to mock.");
-    object? instance = EvaluateReceiver(member.Expression, setter);
+    (object? instance, bool ignoreInstance) = ResolveReceiver(member.Expression, setter);
     IArgumentMatcher valueMatcher = ToMatcher(StripConversions(value.Body), propertyInfo.PropertyType, isOut: false);
-    return new ParsedCall(setter, instance, [valueMatcher]);
+    return new ParsedCall(setter, instance, [valueMatcher], ignoreInstance);
   }
 
-  private static object? EvaluateReceiver(Expression? receiver, MethodBase method) {
+  private static (object? Instance, bool IgnoreInstance) ResolveReceiver(Expression? receiver, MethodBase method) {
     if (receiver is null) {
-      return null;
+      return (null, false);
+    }
+    // Arg.AnyInstance<T>() in receiver position means "this arrangement applies to
+    // every instance"; it is a marker, never evaluated.
+    if (StripConversions(receiver) is MethodCallExpression { Method: { } marker }
+        && (marker.DeclaringType == typeof(Arg))
+        && (marker.Name == nameof(Arg.AnyInstance))) {
+      return (null, true);
     }
     object? instance = Evaluate(receiver) ?? throw new MockeryException(
-        $"The receiver of '{method.Name}' evaluated to null; a stub needs a live instance to match against.");
-    return instance;
+        $"The receiver of '{method.Name}' evaluated to null; a stub needs a live instance to match " +
+        "against. To match every instance, use Arg.AnyInstance<T>() as the receiver.");
+    return (instance, false);
   }
 
   private static IArgumentMatcher[] BuildMatchers(
@@ -113,6 +121,11 @@ internal static class CallExpressionParser {
     if (argument is MethodCallExpression { Method.DeclaringType: not null } call
         && (call.Method.DeclaringType == typeof(Arg))) {
       Type matchedType = call.Method.GetGenericArguments()[0];
+      if (call.Method.Name == nameof(Arg.AnyInstance)) {
+        throw new MockeryException(
+          "Arg.AnyInstance marks the receiver of a call (Arg.AnyInstance<T>().Method(...)); it " +
+          "cannot be used as an argument. Use Arg.Any<T>() to match any argument value.");
+      }
       if (call.Method.Name == nameof(Arg.Any)) {
         return new AnyMatcher(matchedType);
       }
