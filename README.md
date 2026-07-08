@@ -175,9 +175,20 @@ those pass does it pack the package (version taken from the tag), push it to
 NuGet.org, and create a matching GitHub release with the `.nupkg` attached. A test or
 coverage failure aborts the run before anything is published.
 
-**One-time setup:** add a repository secret named `NUGET_API_KEY` (Settings →
-Secrets and variables → Actions) containing a NuGet.org API key scoped to push
-`Nem_Mockery`. The `GITHUB_TOKEN` used for the release is provided automatically.
+Publishing uses NuGet.org **trusted publishing** (OIDC), so there is no long-lived
+API key to store or rotate: the workflow exchanges a short-lived GitHub token for a
+temporary NuGet key at push time.
+
+**One-time setup:**
+
+1. On nuget.org: your username → **Trusted Publishing** → add a policy with
+   **Repository Owner** `MMoosman3141`, **Repository** `Nem_Mockery`, **Workflow
+   File** `release.yml` (name only, no path), Environment left empty.
+2. In the GitHub repo, add a secret named `NUGET_USER` (Settings → Secrets and
+   variables → Actions) holding your nuget.org **username / profile name** — not your
+   email. This is the only secret required; it is not sensitive like an API key.
+
+The `GITHUB_TOKEN` used for the release is provided automatically.
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how the interception pipeline
 works.
