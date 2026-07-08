@@ -41,7 +41,7 @@ internal sealed class MethodMock {
     } catch (Exception ex) {
       throw new MockeryException(
         $"Could not create a detour for '{Describe(method)}'. The runtime may not support " +
-        "detouring this method (very small methods can be inlined; intrinsics cannot be hooked).", ex);
+        "detouring this method (JIT intrinsics, for example, cannot be hooked).", ex);
     }
   }
 
@@ -72,8 +72,16 @@ internal sealed class MethodMock {
         "overlapping methods in opposite orders.");
     }
     lock (_stateLock) {
-      _owners.Add(context);
-      _hook.Apply();
+      try {
+        _owners.Add(context);
+        _hook.Apply();
+      } catch {
+        // Applying the detour failed; surrender the claim so other tests are not
+        // stuck behind a gate nobody holds the hook for.
+        _owners.Remove(context);
+        _gate.Release();
+        throw;
+      }
     }
   }
 
@@ -119,7 +127,11 @@ internal sealed class MethodMock {
     RecordedInvocation invocation = new(Method, argumentsWithSelf, HasThis ? 1 : 0, original);
     Stub[] stubs;
     lock (_stateLock) {
-      _invocations.Add(invocation);
+      // An in-flight call can race the hook's Undo; recording it would leak one
+      // invocation into whichever test claims this method next.
+      if (_owners.Count > 0) {
+        _invocations.Add(invocation);
+      }
       stubs = [.. _stubs];
     }
 
@@ -179,10 +191,7 @@ internal sealed class MethodMock {
   }
 
   internal static string Describe(MethodBase method) {
-    string typeName = method.DeclaringType?.Name ?? "?";
-    string methodName = method.IsConstructor ? $"new {typeName}" : $"{typeName}.{method.Name}";
-    string parameters = string.Join(", ", method.GetParameters().Select(p => p.ParameterType.Name));
-    return $"{methodName}({parameters})";
+    return CallFormatter.FormatSignature(method);
   }
 
   private bool IsOwnedByChainOf(MockContext context) {
@@ -212,9 +221,11 @@ internal sealed class MethodMock {
       throw new MockeryException(
         $"'{Describe(method)}' is abstract; there is no method body to detour. Mock a concrete implementation.");
     }
-    if (method.ContainsGenericParameters) {
+    if (method.IsGenericMethod || (method.DeclaringType?.IsGenericType is true)) {
       throw new MockeryException(
-        $"'{Describe(method)}' has open generic parameters; mock a closed instantiation instead.");
+        $"'{Describe(method)}' cannot be mocked: generic methods and methods on generic types " +
+        "cannot be detoured (the underlying MonoMod runtime detour engine does not support " +
+        "hooking generic sources). Wrap the call in a non-generic method and mock that instead.");
     }
     if (method is MethodInfo { ReturnType.IsByRef: true }) {
       throw new MockeryException(

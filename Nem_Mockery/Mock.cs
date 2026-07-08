@@ -258,10 +258,9 @@ public static class Mock {
     int actual = mock.CountMatchingInvocations(
       parsed.Instance, parsed.Matchers, markVerified: true, parsed.IgnoreInstance);
     if (!times.IsSatisfiedBy(actual)) {
+      string[] matcherTexts = [.. parsed.Matchers.Select(matcher => matcher.ToString() ?? "?")];
       StringBuilder message = new();
-      message.AppendLine(
-        $"Verification failed for {MethodMock.Describe(parsed.Method)} " +
-        $"with arguments ({string.Join(", ", parsed.Matchers)}).");
+      message.AppendLine($"Verification failed for {CallFormatter.Format(parsed.Method, matcherTexts)}.");
       message.AppendLine($"Expected {times}, but was called {actual} time(s) with matching arguments.");
       IReadOnlyList<RecordedInvocation> invocations = mock.GetInvocations();
       if (invocations.Count == 0) {
@@ -277,9 +276,7 @@ public static class Mock {
   }
 
   private static string DescribeInvocation(RecordedInvocation invocation) {
-    string arguments = string.Join(", ", invocation.Arguments.Select(a => a?.ToString() ?? "null"));
-    string target = MethodMock.Describe(invocation.Method);
-    int parenthesisIndex = target.IndexOf('(');
-    return $"{target[..parenthesisIndex]}({arguments})";
+    string[] argumentTexts = [.. invocation.Arguments.Select(a => a?.ToString() ?? "null")];
+    return CallFormatter.Format(invocation.Method, argumentTexts);
   }
 }

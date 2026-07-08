@@ -87,6 +87,13 @@ VerifyNoOtherCalls();   // every recorded call must have been verified
 `Times` supports `Once()`, `Never()`, `Exactly(n)`, `AtLeast(n)`, `AtLeastOnce()`,
 and `AtMost(n)`.
 
+### Verified against the real BCL
+
+The test suite pins these scenarios working against real framework code, not just
+project-local fixtures: `DateTime.Now`, `File.ReadAllText`, `int.TryParse` (with
+out-parameter write-back), `Guid.NewGuid`, async `Task<T>` methods, and extension
+methods.
+
 ## Semantics worth knowing
 
 - **Miss policy: call the original.** A stub only answers calls whose receiver and
@@ -111,9 +118,11 @@ and `AtMost(n)`.
   rare in test code (stubs are arranged before the calling code first runs) but can
   affect hot, trivial methods and code precompiled with R2R/AOT. JIT intrinsics
   (e.g. some `Math`/`DateTime` members) may not be hookable at all.
-- **Generic methods** are mocked per closed instantiation; instantiations over
-  reference types share compiled code, so a stub for `Find<string>` can intercept
-  `Find<object>` calls too (matchers still filter by argument values).
+- **Generic methods and methods on generic types cannot be mocked** — the MonoMod
+  detour engine does not support hooking generic sources at all (verified: both
+  `Echo<int>` and `List<string>.Insert` are refused). Nem_Mockery rejects them
+  upfront with a descriptive `MockeryException`; the workaround is to wrap the
+  generic call in a non-generic method and mock that.
 - **Ref-returning methods, abstract methods, and open generics** are rejected with
   a descriptive `MockeryException`.
 - **Constructors cannot substitute the allocated instance** — `new` still returns

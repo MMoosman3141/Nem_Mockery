@@ -118,6 +118,23 @@ public partial class MockTests {
   }
 
   [Fact]
+  public void VerifySet_Failure_UsesPropertyAssignmentSyntax() {
+    using MockContext context = new();
+    StaticCalculator.Value = 0;
+
+    Mock.WhenSet(() => StaticCalculator.Value, () => Arg.Any<int>()).ThenCallOriginal();
+    StaticCalculator.Value = 3;
+
+    VerificationException thrown = Assert.Throws<VerificationException>(
+      () => Mock.VerifySet(() => StaticCalculator.Value, () => 4));
+
+    // Property accessors render as assignments, not compiler names like set_Value.
+    Assert.Contains("StaticCalculator.Value = 4", thrown.Message);
+    Assert.Contains("StaticCalculator.Value = 3", thrown.Message);
+    Assert.DoesNotContain("set_Value", thrown.Message);
+  }
+
+  [Fact]
   public void VerifySet_CountsMatchingWrites() {
     using MockContext context = new();
     StaticCalculator.Value = 0;

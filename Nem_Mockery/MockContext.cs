@@ -69,10 +69,6 @@ public sealed class MockContext : IDisposable {
     _claimedMocks.Add(mock);
   }
 
-  internal IReadOnlyList<MethodMock> GetClaimedMocks() {
-    return _claimedMocks;
-  }
-
   /// <summary>
   /// Removes every stub this context arranged, releases ownership of the mocked
   /// methods (undoing their detours when this was the last owner), and restores the
