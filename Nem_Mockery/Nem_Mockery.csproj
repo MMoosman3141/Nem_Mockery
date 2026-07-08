@@ -13,16 +13,24 @@
     <PackageId>Nem_Mockery</PackageId>
     <Version>0.1.0</Version>
     <Authors>Mark Moosman</Authors>
+    <Company>Mark Moosman</Company>
+    <Copyright>Copyright © 2026 Mark Moosman</Copyright>
     <Description>A mocking library that requires no interfaces or virtual members. Stubs and verifies static, sealed, and non-virtual methods (including properties and constructors) with a Mockito-flavored syntax, using runtime method detouring.</Description>
     <PackageTags>mocking;testing;mock;stub;detour;static;sealed</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PackageIcon>NemAnkh_128x128.png</PackageIcon>
+    <PackageProjectUrl>https://github.com/MMoosman3141/Nem_Mockery</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/MMoosman3141/Nem_Mockery</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <!-- CI packs explicitly with the tag-derived version; keep local builds from
+         emitting a stray 0.1.0 package on every compile. -->
+    <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
   </PropertyGroup>
 
   <ItemGroup>
     <None Include="..\README.md" Pack="true" PackagePath="\" />
+    <None Include="NemAnkh_128x128.png" Pack="true" PackagePath="\" />
   </ItemGroup>
 
   <ItemGroup>

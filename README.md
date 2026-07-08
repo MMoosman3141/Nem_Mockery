@@ -155,9 +155,29 @@ methods.
 ## Building
 
 ```
-dotnet build          # also produces the NuGet package (GeneratePackageOnBuild)
+dotnet build          # compiles the library and test project
 dotnet test           # runs the xUnit suite with the 80%/80% coverage gate
+dotnet pack -c Release -p:Version=x.y.z   # produces the NuGet package
 ```
+
+## Releasing
+
+Publishing is automated by [`.github/workflows/release.yml`](.github/workflows/release.yml),
+triggered by pushing a version tag:
+
+```
+git tag v0.1.0
+git push origin v0.1.0
+```
+
+The workflow builds, runs the full test suite **and** the coverage gate, and only if
+those pass does it pack the package (version taken from the tag), push it to
+NuGet.org, and create a matching GitHub release with the `.nupkg` attached. A test or
+coverage failure aborts the run before anything is published.
+
+**One-time setup:** add a repository secret named `NUGET_API_KEY` (Settings →
+Secrets and variables → Actions) containing a NuGet.org API key scoped to push
+`Nem_Mockery`. The `GITHUB_TOKEN` used for the release is provided automatically.
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how the interception pipeline
 works.

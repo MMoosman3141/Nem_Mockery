@@ -1,0 +1,70 @@
+name: Release
+
+# Fires when a version tag (e.g. v0.1.0) is pushed. The whole pipeline is one job
+# with ordered steps, so a failing step stops everything after it: if the build or
+# tests fail, the pack / NuGet publish / GitHub release steps never run.
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+permissions:
+  contents: write        # Required to create the GitHub release.
+
+jobs:
+  release:
+    name: Build, test, publish
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the tag
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # Full history so the release can auto-generate notes.
+
+      - name: Set up .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Derive package version from the tag
+        id: version
+        run: |
+          # v0.1.0 -> 0.1.0
+          VERSION="${GITHUB_REF_NAME#v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "Building version $VERSION from tag $GITHUB_REF_NAME"
+
+      - name: Restore
+        run: dotnet restore
+
+      - name: Build (Release, version from tag)
+        run: dotnet build --configuration Release --no-restore -p:Version=${{ steps.version.outputs.version }}
+
+      # Enforces the suite AND the 80/80 coverage gate baked into the test .csproj.
+      # A failure here fails the job, so nothing below publishes.
+      - name: Test
+        run: dotnet test --configuration Release --no-build
+
+      - name: Pack
+        run: >
+          dotnet pack Nem_Mockery/Nem_Mockery.csproj
+          --configuration Release --no-build
+          -p:Version=${{ steps.version.outputs.version }}
+          --output artifacts
+
+      - name: Publish to NuGet.org
+        run: >
+          dotnet nuget push "artifacts/*.nupkg"
+          --api-key "${{ secrets.NUGET_API_KEY }}"
+          --source https://api.nuget.org/v3/index.json
+          --skip-duplicate
+
+      - name: Create GitHub release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: >
+          gh release create "$GITHUB_REF_NAME"
+          artifacts/*.nupkg
+          --title "Nem_Mockery ${{ steps.version.outputs.version }}"
+          --generate-notes
