@@ -27,7 +27,7 @@ namespace Nem_Mockery;
 /// </code>
 /// </remarks>
 public sealed class MockContext : IDisposable {
-  private static readonly AsyncLocal<MockContext?> s_current = new();
+  private static readonly AsyncLocal<MockContext?> _current = new();
   private readonly List<MethodMock> _claimedMocks = [];
 
   /// <summary>
@@ -36,8 +36,8 @@ public sealed class MockContext : IDisposable {
   /// the outer.
   /// </summary>
   public MockContext() {
-    Parent = s_current.Value;
-    s_current.Value = this;
+    Parent = _current.Value;
+    _current.Value = this;
   }
 
   /// <summary>
@@ -46,12 +46,12 @@ public sealed class MockContext : IDisposable {
   /// </summary>
   public bool IsDisposed { get; private set; }
 
-  internal static MockContext? Current => s_current.Value;
+  internal static MockContext? Current => _current.Value;
 
   internal MockContext? Parent { get; }
 
   internal static MockContext RequireCurrent() {
-    MockContext? current = s_current.Value;
+    MockContext? current = _current.Value;
     if (current is null || current.IsDisposed) {
       throw new MockeryException(
         "No active MockContext. Wrap the test body in 'using MockContext context = new();' " +
@@ -83,8 +83,8 @@ public sealed class MockContext : IDisposable {
       mock.Release(this);
     }
     _claimedMocks.Clear();
-    if (ReferenceEquals(s_current.Value, this)) {
-      s_current.Value = Parent;
+    if (ReferenceEquals(_current.Value, this)) {
+      _current.Value = Parent;
     }
   }
 }

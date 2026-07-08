@@ -8,37 +8,31 @@ namespace Nem_Mockery.Stubbing;
 /// through. A stub with no behaviors yet (a <c>When</c> without any <c>Then*</c>)
 /// never matches, so it cannot change program behavior.
 /// </summary>
-internal sealed class Stub {
+internal sealed class Stub(
+    MockContext owner, object? instance, IReadOnlyList<IArgumentMatcher> matchers, bool ignoreInstance) {
   private readonly List<IBehavior> _behaviors = [];
   private int _executionCount = -1;
-
-  internal Stub(MockContext owner, object? instance, IReadOnlyList<IArgumentMatcher> matchers, bool ignoreInstance) {
-    Owner = owner;
-    Instance = instance;
-    Matchers = matchers;
-    IgnoreInstance = ignoreInstance;
-  }
 
   /// <summary>
   /// The context the stub was created in; the stub dies with it.
   /// </summary>
-  internal MockContext Owner { get; }
+  internal MockContext Owner { get; } = owner;
 
   /// <summary>
   /// The receiver the stub was written against, or <see langword="null"/> for statics.
   /// </summary>
-  internal object? Instance { get; }
+  internal object? Instance { get; } = instance;
 
   /// <summary>
   /// One matcher per parameter of the stubbed method.
   /// </summary>
-  internal IReadOnlyList<IArgumentMatcher> Matchers { get; }
+  internal IReadOnlyList<IArgumentMatcher> Matchers { get; } = matchers;
 
   /// <summary>
   /// Whether receiver matching is skipped (true for constructor stubs, whose
   /// receiver is always a fresh allocation).
   /// </summary>
-  internal bool IgnoreInstance { get; }
+  internal bool IgnoreInstance { get; } = ignoreInstance;
 
   internal void AddBehavior(IBehavior behavior) {
     _behaviors.Add(behavior);

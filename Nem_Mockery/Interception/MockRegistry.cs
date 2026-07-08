@@ -9,22 +9,22 @@ namespace Nem_Mockery.Interception;
 /// strong references are what keep applied detours stable.
 /// </summary>
 internal static class MockRegistry {
-  private static readonly Lock s_lock = new();
-  private static readonly Dictionary<MethodBase, MethodMock> s_byMethod = [];
-  private static readonly List<MethodMock> s_byId = [];
+  private static readonly Lock _lock = new();
+  private static readonly Dictionary<MethodBase, MethodMock> _byMethod = [];
+  private static readonly List<MethodMock> _byId = [];
 
   /// <summary>
   /// Returns the existing mock for <paramref name="method"/> or creates one (building
   /// its handler and hook) on first use.
   /// </summary>
   internal static MethodMock GetOrCreate(MethodBase method) {
-    lock (s_lock) {
-      if (s_byMethod.TryGetValue(method, out MethodMock? existing)) {
+    lock (_lock) {
+      if (_byMethod.TryGetValue(method, out MethodMock? existing)) {
         return existing;
       }
-      MethodMock created = new(s_byId.Count, method);
-      s_byId.Add(created);
-      s_byMethod[method] = created;
+      MethodMock created = new(_byId.Count, method);
+      _byId.Add(created);
+      _byMethod[method] = created;
       return created;
     }
   }
@@ -34,8 +34,8 @@ internal static class MockRegistry {
   /// method has never been mocked.
   /// </summary>
   internal static MethodMock? Find(MethodBase method) {
-    lock (s_lock) {
-      return s_byMethod.GetValueOrDefault(method);
+    lock (_lock) {
+      return _byMethod.GetValueOrDefault(method);
     }
   }
 
@@ -43,8 +43,8 @@ internal static class MockRegistry {
   /// Resolves the id a generated handler embedded back to its mock.
   /// </summary>
   internal static MethodMock GetById(int id) {
-    lock (s_lock) {
-      return s_byId[id];
+    lock (_lock) {
+      return _byId[id];
     }
   }
 
@@ -52,8 +52,8 @@ internal static class MockRegistry {
   /// Returns every registered mock (used by <c>VerifyNoOtherCalls</c>).
   /// </summary>
   internal static IReadOnlyList<MethodMock> GetAll() {
-    lock (s_lock) {
-      return [.. s_byId];
+    lock (_lock) {
+      return [.. _byId];
     }
   }
 }

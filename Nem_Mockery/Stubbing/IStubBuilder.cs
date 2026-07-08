@@ -21,6 +21,7 @@ public interface IStubBuilder<TResult> {
   /// <param name="values">The values to return in sequence; must not be empty.</param>
   /// <returns>The same builder, for chaining further steps.</returns>
   /// <exception cref="ArgumentException"><paramref name="values"/> is empty.</exception>
+  /// <exception cref="ArgumentNullException"><paramref name="values"/> is null.</exception>
   IStubBuilder<TResult> ThenReturn(params TResult[] values);
 
   /// <summary>
@@ -28,6 +29,7 @@ public interface IStubBuilder<TResult> {
   /// </summary>
   /// <param name="exception">The exception to throw.</param>
   /// <returns>The same builder, for chaining further steps.</returns>
+  /// <exception cref="ArgumentNullException"><paramref name="exception"/> is null.</exception>
   IStubBuilder<TResult> ThenThrow(Exception exception);
 
   /// <summary>
@@ -44,6 +46,7 @@ public interface IStubBuilder<TResult> {
   /// </summary>
   /// <param name="answer">The callback that computes the result.</param>
   /// <returns>The same builder, for chaining further steps.</returns>
+  /// <exception cref="ArgumentNullException"><paramref name="answer"/> is null.</exception>
   IStubBuilder<TResult> ThenAnswer(Func<IInvocation, TResult> answer);
 
   /// <summary>
@@ -72,6 +75,7 @@ public interface IVoidStubBuilder {
   /// </summary>
   /// <param name="exception">The exception to throw.</param>
   /// <returns>The same builder, for chaining further steps.</returns>
+  /// <exception cref="ArgumentNullException"><paramref name="exception"/> is null.</exception>
   IVoidStubBuilder ThenThrow(Exception exception);
 
   /// <summary>
@@ -88,6 +92,7 @@ public interface IVoidStubBuilder {
   /// </summary>
   /// <param name="answer">The callback to run.</param>
   /// <returns>The same builder, for chaining further steps.</returns>
+  /// <exception cref="ArgumentNullException"><paramref name="answer"/> is null.</exception>
   IVoidStubBuilder ThenAnswer(Action<IInvocation> answer);
 
   /// <summary>

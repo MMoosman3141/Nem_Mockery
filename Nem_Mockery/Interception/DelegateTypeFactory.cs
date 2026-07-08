@@ -10,12 +10,12 @@ namespace Nem_Mockery.Interception;
 /// <c>this</c> of struct instance methods), which MonoMod trampolines require exactly.
 /// </summary>
 internal static class DelegateTypeFactory {
-  private static readonly Lock s_lock = new();
-  private static readonly Dictionary<string, Type> s_cache = [];
-  private static readonly ModuleBuilder s_module = AssemblyBuilder
+  private static readonly Lock _lock = new();
+  private static readonly Dictionary<string, Type> _cache = [];
+  private static readonly ModuleBuilder _module = AssemblyBuilder
     .DefineDynamicAssembly(new AssemblyName("Nem_Mockery.DynamicDelegates"), AssemblyBuilderAccess.Run)
     .DefineDynamicModule("Nem_Mockery.DynamicDelegates");
-  private static int s_nextTypeId;
+  private static int _nextTypeId;
 
   /// <summary>
   /// Returns a delegate type whose <c>Invoke</c> has exactly the given signature,
@@ -26,19 +26,19 @@ internal static class DelegateTypeFactory {
   /// <returns>A sealed <see cref="MulticastDelegate"/> subclass.</returns>
   internal static Type GetDelegateType(Type returnType, Type[] parameterTypes) {
     string key = BuildKey(returnType, parameterTypes);
-    lock (s_lock) {
-      if (s_cache.TryGetValue(key, out Type? cached)) {
+    lock (_lock) {
+      if (_cache.TryGetValue(key, out Type? cached)) {
         return cached;
       }
       Type created = Build(returnType, parameterTypes);
-      s_cache[key] = created;
+      _cache[key] = created;
       return created;
     }
   }
 
   private static Type Build(Type returnType, Type[] parameterTypes) {
-    TypeBuilder builder = s_module.DefineType(
-      $"OrigDelegate{s_nextTypeId++}",
+    TypeBuilder builder = _module.DefineType(
+      $"OrigDelegate{_nextTypeId++}",
       TypeAttributes.Public | TypeAttributes.Sealed | TypeAttributes.AutoClass,
       typeof(MulticastDelegate));
 

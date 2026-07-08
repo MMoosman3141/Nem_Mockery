@@ -1,5 +1,7 @@
-# .editorconfig — C# style: no var, 1TBS braces, 2-space indent, .NET naming.
+# .editorconfig — C# style: no var, 1TBS braces, 2-space indent, CRLF, .NET naming.
 # Copy to the repository root as ".editorconfig".
+# Pair with a .gitattributes containing "* text=auto eol=crlf" so git and the
+# editor agree on line endings.
 root = true
 
 [*]
@@ -72,22 +74,12 @@ dotnet_naming_rule.constants_pascal_case.severity = warning
 dotnet_naming_symbols.constants.applicable_kinds = field, local
 dotnet_naming_symbols.constants.required_modifiers = const
 
-# Private/internal static fields are s_camelCase.
-dotnet_naming_rule.private_static_fields_s_prefix.symbols = private_static_fields
-dotnet_naming_rule.private_static_fields_s_prefix.style = s_prefix_camel_case
-dotnet_naming_rule.private_static_fields_s_prefix.severity = warning
-dotnet_naming_symbols.private_static_fields.applicable_kinds = field
-dotnet_naming_symbols.private_static_fields.applicable_accessibilities = private, internal
-dotnet_naming_symbols.private_static_fields.required_modifiers = static
-dotnet_naming_style.s_prefix_camel_case.required_prefix = s_
-dotnet_naming_style.s_prefix_camel_case.capitalization = camel_case
-
-# Private/internal instance fields are _camelCase.
+# All non-public class fields (instance and static) are _camelCase.
 dotnet_naming_rule.private_fields_underscore.symbols = private_fields
 dotnet_naming_rule.private_fields_underscore.style = underscore_camel_case
 dotnet_naming_rule.private_fields_underscore.severity = warning
 dotnet_naming_symbols.private_fields.applicable_kinds = field
-dotnet_naming_symbols.private_fields.applicable_accessibilities = private, internal
+dotnet_naming_symbols.private_fields.applicable_accessibilities = private, internal, protected, protected_internal, private_protected
 dotnet_naming_style.underscore_camel_case.required_prefix = _
 dotnet_naming_style.underscore_camel_case.capitalization = camel_case
 

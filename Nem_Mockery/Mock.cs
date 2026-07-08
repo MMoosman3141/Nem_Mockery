@@ -41,6 +41,7 @@ public static class Mock {
   /// No <see cref="MockContext"/> is active, the expression is not a mockable call, or
   /// the method cannot be detoured.
   /// </exception>
+  /// <exception cref="ArgumentNullException"><paramref name="call"/> is null.</exception>
   public static IStubBuilder<TResult> When<TResult>(Expression<Func<TResult>> call) {
     ArgumentNullException.ThrowIfNull(call);
     return new StubBuilder<TResult>(RegisterStub(CallExpressionParser.ParseCall(call)));
@@ -57,6 +58,7 @@ public static class Mock {
   /// No <see cref="MockContext"/> is active, the expression is not a mockable call, or
   /// the method cannot be detoured.
   /// </exception>
+  /// <exception cref="ArgumentNullException"><paramref name="call"/> is null.</exception>
   public static IVoidStubBuilder When(Expression<Action> call) {
     ArgumentNullException.ThrowIfNull(call);
     return new VoidStubBuilder(RegisterStub(CallExpressionParser.ParseCall(call)));
@@ -72,6 +74,9 @@ public static class Mock {
   /// <returns>A builder to attach <c>Then*</c> behaviors to.</returns>
   /// <exception cref="MockeryException">
   /// No <see cref="MockContext"/> is active or the property has no setter.
+  /// </exception>
+  /// <exception cref="ArgumentNullException">
+  /// <paramref name="property"/> or <paramref name="value"/> is null.
   /// </exception>
   public static IVoidStubBuilder WhenSet<TProperty>(
       Expression<Func<TProperty>> property, Expression<Func<TProperty>> value) {
@@ -96,6 +101,7 @@ public static class Mock {
   /// <exception cref="MockeryException">
   /// No <see cref="MockContext"/> is active or the lambda is not a constructor call.
   /// </exception>
+  /// <exception cref="ArgumentNullException"><paramref name="construction"/> is null.</exception>
   public static IVoidStubBuilder WhenNew<T>(Expression<Func<T>> construction) {
     ArgumentNullException.ThrowIfNull(construction);
     return new VoidStubBuilder(RegisterStub(CallExpressionParser.ParseConstruction(construction)));
@@ -109,6 +115,7 @@ public static class Mock {
   /// <param name="call">A lambda describing the call, with values or <see cref="Arg"/> matchers.</param>
   /// <exception cref="VerificationException">The call count is not exactly one.</exception>
   /// <exception cref="MockeryException">The method was never mocked in this context.</exception>
+  /// <exception cref="ArgumentNullException"><paramref name="call"/> is null.</exception>
   public static void Verify<TResult>(Expression<Func<TResult>> call) {
     Verify(call, Times.Once());
   }
@@ -123,6 +130,7 @@ public static class Mock {
   /// <param name="times">The expected call count.</param>
   /// <exception cref="VerificationException">The call count does not satisfy <paramref name="times"/>.</exception>
   /// <exception cref="MockeryException">The method was never mocked in this context.</exception>
+  /// <exception cref="ArgumentNullException"><paramref name="call"/> is null.</exception>
   public static void Verify<TResult>(Expression<Func<TResult>> call, Times times) {
     ArgumentNullException.ThrowIfNull(call);
     VerifyCore(CallExpressionParser.ParseCall(call), times);
@@ -135,6 +143,7 @@ public static class Mock {
   /// <param name="call">A lambda describing the call, with values or <see cref="Arg"/> matchers.</param>
   /// <exception cref="VerificationException">The call count is not exactly one.</exception>
   /// <exception cref="MockeryException">The method was never mocked in this context.</exception>
+  /// <exception cref="ArgumentNullException"><paramref name="call"/> is null.</exception>
   public static void Verify(Expression<Action> call) {
     Verify(call, Times.Once());
   }
@@ -147,6 +156,7 @@ public static class Mock {
   /// <param name="times">The expected call count.</param>
   /// <exception cref="VerificationException">The call count does not satisfy <paramref name="times"/>.</exception>
   /// <exception cref="MockeryException">The method was never mocked in this context.</exception>
+  /// <exception cref="ArgumentNullException"><paramref name="call"/> is null.</exception>
   public static void Verify(Expression<Action> call, Times times) {
     ArgumentNullException.ThrowIfNull(call);
     VerifyCore(CallExpressionParser.ParseCall(call), times);
@@ -161,6 +171,9 @@ public static class Mock {
   /// <param name="value">A lambda producing the value matcher.</param>
   /// <exception cref="VerificationException">The call count is not exactly one.</exception>
   /// <exception cref="MockeryException">The setter was never mocked in this context.</exception>
+  /// <exception cref="ArgumentNullException">
+  /// <paramref name="property"/> or <paramref name="value"/> is null.
+  /// </exception>
   public static void VerifySet<TProperty>(
       Expression<Func<TProperty>> property, Expression<Func<TProperty>> value) {
     VerifySet(property, value, Times.Once());
@@ -176,6 +189,9 @@ public static class Mock {
   /// <param name="times">The expected call count.</param>
   /// <exception cref="VerificationException">The call count does not satisfy <paramref name="times"/>.</exception>
   /// <exception cref="MockeryException">The setter was never mocked in this context.</exception>
+  /// <exception cref="ArgumentNullException">
+  /// <paramref name="property"/> or <paramref name="value"/> is null.
+  /// </exception>
   public static void VerifySet<TProperty>(
       Expression<Func<TProperty>> property, Expression<Func<TProperty>> value, Times times) {
     ArgumentNullException.ThrowIfNull(property);
@@ -191,6 +207,7 @@ public static class Mock {
   /// <param name="construction">A lambda with a single <c>new</c> expression.</param>
   /// <exception cref="VerificationException">The call count is not exactly one.</exception>
   /// <exception cref="MockeryException">The constructor was never mocked in this context.</exception>
+  /// <exception cref="ArgumentNullException"><paramref name="construction"/> is null.</exception>
   public static void VerifyNew<T>(Expression<Func<T>> construction) {
     VerifyNew(construction, Times.Once());
   }
@@ -204,6 +221,7 @@ public static class Mock {
   /// <param name="times">The expected call count.</param>
   /// <exception cref="VerificationException">The call count does not satisfy <paramref name="times"/>.</exception>
   /// <exception cref="MockeryException">The constructor was never mocked in this context.</exception>
+  /// <exception cref="ArgumentNullException"><paramref name="construction"/> is null.</exception>
   public static void VerifyNew<T>(Expression<Func<T>> construction, Times times) {
     ArgumentNullException.ThrowIfNull(construction);
     VerifyCore(CallExpressionParser.ParseConstruction(construction), times);
