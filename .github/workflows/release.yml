@@ -35,6 +35,12 @@ jobs:
           # v0.1.0 -> 0.1.0
           VERSION="${GITHUB_REF_NAME#v}"
           echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          # A SemVer pre-release label (the hyphen, e.g. 0.1.0-rc1) marks a prerelease.
+          if [[ "$VERSION" == *-* ]]; then
+            echo "prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "prerelease=false" >> "$GITHUB_OUTPUT"
+          fi
           echo "Building version $VERSION from tag $GITHUB_REF_NAME"
 
       - name: Restore
@@ -76,8 +82,14 @@ jobs:
       - name: Create GitHub release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: >
-          gh release create "$GITHUB_REF_NAME"
-          artifacts/*.nupkg
-          --title "Nem_Mockery ${{ steps.version.outputs.version }}"
-          --generate-notes
+        run: |
+          # Mark hyphenated versions (e.g. 0.1.0-rc1) as GitHub prereleases.
+          PRERELEASE_FLAG=""
+          if [[ "${{ steps.version.outputs.prerelease }}" == "true" ]]; then
+            PRERELEASE_FLAG="--prerelease"
+          fi
+          gh release create "$GITHUB_REF_NAME" \
+            artifacts/*.nupkg \
+            --title "Nem_Mockery ${{ steps.version.outputs.version }}" \
+            --generate-notes \
+            $PRERELEASE_FLAG
