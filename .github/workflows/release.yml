@@ -6,7 +6,8 @@ name: Release
 on:
   push:
     tags:
-      - 'v*.*.*'
+      - 'v*.*.*'        # release, e.g. v0.1.0
+      - 'v*.*.*-*'      # prerelease, e.g. v0.1.0-rc1 (published as a NuGet prerelease)
 
 permissions:
   contents: write        # Required to create the GitHub release.

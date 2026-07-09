@@ -170,6 +170,9 @@ git tag v0.1.0
 git push origin v0.1.0
 ```
 
+Prerelease tags (`v0.1.0-rc1`) are also accepted and publish as NuGet prereleases —
+useful for a dry run of the pipeline before a real release.
+
 The workflow builds, runs the full test suite **and** the coverage gate, and only if
 those pass does it pack the package (version taken from the tag), push it to
 NuGet.org, and create a matching GitHub release with the `.nupkg` attached. A test or
